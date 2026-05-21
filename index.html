@@ -1,294 +1,1041 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Odonto-SIM: Cistos & Tumores</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .accordion-content.open { max-height: 1000px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OdontoSIM — Treinamento Clínico Interativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { lexend: ['Lexend', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+      colors: {
+        navy: { 950:'#040d1a', 900:'#0a1628', 800:'#0f1f38', 700:'#162847', 600:'#1e3556' },
+        teal: { 400:'#2dd4bf', 500:'#14b8a6', 600:'#0d9488' },
+        emerald: { 400:'#34d399', 500:'#10b981' },
+        amber: { 400:'#fbbf24', 500:'#f59e0b' },
+        rose: { 400:'#fb7185', 500:'#f43f5e' },
+        sky: { 400:'#38bdf8', 500:'#0ea5e9' }
+      }
+    }
+  }
+}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Lexend',sans-serif;background:#040d1a;color:#e2e8f0;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0a1628}::-webkit-scrollbar-thumb{background:#1e3556;border-radius:3px}
+
+/* NAV */
+.nav-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;cursor:pointer;transition:all .25s;font-size:13px;font-weight:500;color:#94a3b8;white-space:nowrap;border:1.5px solid transparent}
+.nav-pill:hover{color:#e2e8f0;background:#0f1f38;border-color:#1e3556}
+.nav-pill.active{color:#040d1a;background:linear-gradient(135deg,#2dd4bf,#0ea5e9);border-color:transparent;box-shadow:0 0 20px rgba(45,212,191,.3)}
+.nav-pill i{font-size:15px}
+
+/* CARDS */
+.card{background:linear-gradient(135deg,#0f1f38 0%,#0a1628 100%);border:1px solid #162847;border-radius:16px;padding:24px;transition:all .3s}
+.card:hover{border-color:#1e3556;transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.card-sm{background:#162847;border:1px solid #1e3556;border-radius:12px;padding:16px}
+
+/* TAGS & BADGES */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.badge-teal{background:rgba(45,212,191,.15);color:#2dd4bf;border:1px solid rgba(45,212,191,.3)}
+.badge-rose{background:rgba(244,63,94,.15);color:#fb7185;border:1px solid rgba(244,63,94,.3)}
+.badge-amber{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+.badge-sky{background:rgba(56,189,248,.15);color:#38bdf8;border:1px solid rgba(56,189,248,.3)}
+.badge-emerald{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:12px;font-weight:600;font-size:14px;cursor:pointer;transition:all .2s;border:none;font-family:'Lexend',sans-serif}
+.btn-primary{background:linear-gradient(135deg,#14b8a6,#0ea5e9);color:#040d1a;box-shadow:0 4px 15px rgba(20,184,166,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(20,184,166,.5)}
+.btn-ghost{background:transparent;color:#94a3b8;border:1.5px solid #1e3556}
+.btn-ghost:hover{background:#0f1f38;color:#e2e8f0;border-color:#2dd4bf}
+.btn-danger{background:linear-gradient(135deg,#f43f5e,#ec4899);color:#fff}
+.btn-success{background:linear-gradient(135deg,#10b981,#14b8a6);color:#040d1a}
+
+/* SUTURA TABS */
+.stab{padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:#64748b;border:1px solid transparent;transition:all .2s}
+.stab.active{background:#1e3556;color:#2dd4bf;border-color:#2dd4bf}
+.stab:hover:not(.active){color:#94a3b8;background:#162847}
+
+/* CASE CARD */
+.case-card{background:linear-gradient(135deg,#0f1f38,#0a1628);border:1px solid #162847;border-radius:20px;padding:28px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.case-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2dd4bf,#0ea5e9,#818cf8)}
+.case-card:hover{border-color:#2dd4bf;transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+
+/* REVEAL */
+.reveal-block{background:#040d1a;border:1px solid #162847;border-radius:14px;padding:20px;margin-top:16px;animation:slideIn .4s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* PRESCRIPTION */
+.rx-block{background:linear-gradient(135deg,#051220,#0a1628);border:1px solid #14b8a6;border-radius:16px;padding:24px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;position:relative}
+.rx-block::before{content:'℞';position:absolute;top:16px;right:20px;font-size:48px;color:rgba(20,184,166,.08);font-weight:700}
+
+/* CHECKLIST */
+.check-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;border:1px solid #162847;cursor:pointer;transition:all .25s;margin-bottom:8px;background:#0a1628}
+.check-item:hover{border-color:#1e3556;background:#0f1f38}
+.check-item.done{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.3)}
+.check-box{width:22px;height:22px;border-radius:6px;border:2px solid #2d3f5c;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.check-item.done .check-box{background:#10b981;border-color:#10b981}
+
+/* SECTION */
+.section{display:none}.section.active{display:block}
+
+/* SUTURA SELECTOR */
+.sut-btn{padding:10px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;text-align:center;border:1.5px solid #1e3556;color:#64748b;transition:all .2s;background:#0a1628}
+.sut-btn:hover{border-color:#2dd4bf;color:#2dd4bf}
+.sut-btn.active{background:rgba(45,212,191,.1);border-color:#2dd4bf;color:#2dd4bf}
+
+/* PROGRESS */
+.progress-bar{height:6px;background:#162847;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#14b8a6,#0ea5e9);border-radius:3px;transition:width .5s ease}
+
+/* MOBILE NAV */
+@media(max-width:768px){
+  .nav-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .nav-scroll::-webkit-scrollbar{display:none}
+  .nav-inner{min-width:max-content}
+}
+
+.glow-teal{text-shadow:0 0 20px rgba(45,212,191,.5)}
+.section-title{font-size:22px;font-weight:700;color:#e2e8f0;margin-bottom:6px}
+.section-sub{font-size:13px;color:#64748b;margin-bottom:24px}
+.label{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.value{font-size:14px;color:#cbd5e1;line-height:1.7}
+</style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 min-h-screen pb-12">
+<body>
 
-    <header class="bg-gradient-to-r report-header from-teal-600 to-cyan-700 text-white py-8 px-4 shadow-md text-center">
-        <h1 class="text-3xl font-extrabold tracking-tight md:text-4xl flex justify-center items-center gap-2">
-            <i data-lucide="shield-alert" class="w-8 h-8 text-cyan-200"></i> Odonto-SIM
-        </h1>
-        <p class="mt-2 text-teal-100 max-w-md mx-auto text-sm md:text-base">Guia Interativo de Cistos e Tumores Odontogênicos para a Prova.</p>
-    </header>
+<!-- HEADER -->
+<header style="background:#0a1628;border-bottom:1px solid #162847;padding:14px 20px;position:sticky;top:0;z-index:100">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:38px;height:38px;background:linear-gradient(135deg,#14b8a6,#0ea5e9);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="fas fa-tooth" style="color:#040d1a;font-size:18px"></i>
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#e2e8f0">OdontoSIM</div>
+        <div style="font-size:11px;color:#475569">Treinamento Clínico Interativo</div>
+      </div>
+    </div>
+    <div class="badge badge-teal"><i class="fas fa-wifi"></i> Funciona offline · Compartilhe o link</div>
+  </div>
+</header>
 
-    <main class="max-w-4xl mx-auto mt-6 px-4">
-        
-        <div class="flex border-b border-slate-200 bg-white rounded-t-lg shadow-sm">
-            <button onclick="switchTab('cistos')" id="btn-cistos" class="flex-1 py-4 text-center font-bold text-teal-600 border-b-2 border-teal-600 focus:outline-none flex justify-center items-center gap-2 transition-all cursor-pointer">
-                <i data-lucide="activity" class="w-5 h-5"></i> Cistos Odontogênicos
-            </button>
-            <button onclick="switchTab('tumores')" id="btn-tumores" class="flex-1 py-4 text-center font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-700 focus:outline-none flex justify-center items-center gap-2 transition-all cursor-pointer">
-                <i data-lucide="layers" class="w-5 h-5"></i> Tumores Odontogênicos
-            </button>
+<!-- SHARE BANNER -->
+<div style="background:linear-gradient(135deg,rgba(14,165,233,.15),rgba(20,184,166,.1));border-bottom:1px solid rgba(45,212,191,.2);padding:10px 20px">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <i class="fas fa-share-nodes" style="color:#2dd4bf;font-size:14px"></i>
+    <span style="font-size:13px;color:#94a3b8"><strong style="color:#2dd4bf">Como compartilhar com sua amiga:</strong> Salve este arquivo .html → suba no GitHub Pages (gratuito) → mande o link. Ela abre no celular, sem instalar nada. <span style="color:#64748b">Instruções detalhadas no rodapé ↓</span></span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav style="padding:14px 20px;border-bottom:1px solid #0f1f38">
+  <div style="max-width:1100px;margin:0 auto" class="nav-scroll">
+    <div class="nav-inner" style="display:flex;gap:8px">
+      <div class="nav-pill active" onclick="showSection('simulador')"><i class="fas fa-user-doctor"></i> Simulador de Casos</div>
+      <div class="nav-pill" onclick="showSection('suturas')"><i class="fas fa-thread"></i> Atlas de Suturas</div>
+      <div class="nav-pill" onclick="showSection('receituario')"><i class="fas fa-prescription"></i> Receituário</div>
+      <div class="nav-pill" onclick="showSection('checklist')"><i class="fas fa-list-check"></i> Checklist</div>
+      <div class="nav-pill" onclick="showSection('compartilhar')"><i class="fas fa-share-alt"></i> Compartilhar</div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main style="max-width:1100px;margin:0 auto;padding:24px 20px 60px">
+
+<!-- ===== SEÇÃO 1: SIMULADOR ===== -->
+<section id="simulador" class="section active">
+  <div style="margin-bottom:28px">
+    <div class="section-title"><i class="fas fa-user-doctor" style="color:#2dd4bf;margin-right:10px"></i>O Professor Fingindo Ser Paciente</div>
+    <div class="section-sub">Selecione um caso. Analise a queixa. Clique em "Estruturar Resposta Acadêmica" para revelar o diagnóstico completo.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="randomCase()"><i class="fas fa-shuffle"></i> Caso Aleatório</button>
+      <button class="btn btn-ghost" onclick="resetCase()"><i class="fas fa-rotate-left"></i> Resetar</button>
+    </div>
+  </div>
+
+  <!-- CASE GRID -->
+  <div id="case-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:28px"></div>
+
+  <!-- ACTIVE CASE -->
+  <div id="active-case" style="display:none">
+    <div style="background:linear-gradient(135deg,#0f1f38,#0a1628);border:2px solid #2dd4bf;border-radius:20px;padding:28px;margin-bottom:20px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2dd4bf,#0ea5e9)"></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <div class="badge badge-rose"><i class="fas fa-comment-medical"></i> Fala do Paciente</div>
+        <div id="case-badge" class="badge"></div>
+      </div>
+      <div style="background:#040d1a;border-radius:14px;padding:20px;margin-bottom:20px;border-left:4px solid #2dd4bf">
+        <div style="font-size:16px;font-style:italic;color:#cbd5e1;line-height:1.7" id="case-speech"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="revealAnswer()" id="reveal-btn"><i class="fas fa-eye"></i> Estruturar Resposta Acadêmica</button>
+        <button class="btn btn-ghost" onclick="resetCase()"><i class="fas fa-arrow-left"></i> Voltar aos Casos</button>
+      </div>
+    </div>
+    <div id="answer-block" style="display:none"></div>
+  </div>
+</section>
+
+<!-- ===== SEÇÃO 2: SUTURAS ===== -->
+<section id="suturas" class="section">
+  <div style="margin-bottom:24px">
+    <div class="section-title"><i class="fas fa-thread" style="color:#2dd4bf;margin-right:10px"></i>Atlas Interativo de Suturas</div>
+    <div class="section-sub">Selecione a técnica para ver mecânica, indicação clínica e vantagem biomecânica.</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px" id="sut-grid"></div>
+  <div id="sut-panel" style="display:none">
+    <div class="card" style="border-color:#2dd4bf">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+        <div id="sut-icon" style="width:44px;height:44px;background:linear-gradient(135deg,#14b8a6,#0ea5e9);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:#e2e8f0" id="sut-name"></div>
+          <div style="font-size:12px;color:#64748b" id="sut-sub"></div>
         </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="stab active" id="stab-0" onclick="showTab(0)"><i class="fas fa-syringe"></i> A Mecânica</div>
+        <div class="stab" id="stab-1" onclick="showTab(1)"><i class="fas fa-calendar-check"></i> Quando Usar</div>
+        <div class="stab" id="stab-2" onclick="showTab(2)"><i class="fas fa-atom"></i> Por que Usar</div>
+      </div>
+      <div id="sut-content" style="background:#040d1a;border-radius:14px;padding:20px;line-height:1.8;color:#cbd5e1;font-size:14px;min-height:140px"></div>
+    </div>
+  </div>
+</section>
 
-        <div id="tab-cistos" class="tab-content active mt-4 space-y-4">
-            
-            <div class="text-xs font-bold text-rose-600 uppercase tracking-wider pl-1 mt-6 mb-2">Cistos Inflamatórios</div>
-            
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('cisto-periapical')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-rose-50 text-rose-700 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 1 (Comum)</span>
-                        <h3 class="text-lg font-bold text-slate-800">1. Cisto Periapical (Radicular)</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-cisto-periapical" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="cisto-periapical" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Causa / Etiologia:</strong> Estimulação inflamatória do epitélio (restos de Malassez) decorrente de necrose pulpar (dentes sem vitalidade). Representa de 7 a 54% das áreas radiotransparentes.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Região Anatômica:</strong> Localizado diretamente no ápice radicular (ponta da raiz) de dentes decíduos ou permanentes com perda de vitalidade.</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Expansão:</strong> Geralmente é assintomático e pequeno, mas pode apresentar tumefação (aumento de volume ósseo/gengival) e leve sensibilidade local.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Complicações e Tratamento:</strong> Mobilidade, deslocamento de dentes adjacentes, perda da lâmina dura e reabsorção radicular. Tratado via endodontia convencional ou cirurgia paraendodôntica.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<!-- ===== SEÇÃO 3: RECEITUÁRIO ===== -->
+<section id="receituario" class="section">
+  <div style="margin-bottom:24px">
+    <div class="section-title"><i class="fas fa-prescription" style="color:#2dd4bf;margin-right:10px"></i>Calculadora de Receituário de Urgência</div>
+    <div class="section-sub">Selecione a patologia para gerar a prescrição completa formatada.</div>
+  </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('cisto-lateral')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-rose-50 text-rose-700 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 1 (Comum)</span>
-                        <h3 class="text-lg font-bold text-slate-800">2. Cisto Radicular Lateral</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-cisto-lateral" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="cisto-lateral" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Causa / Etiologia:</strong> Mesma origem inflamatória e epitelial do cisto periapical, porém o estímulo caminha lateralmente à raiz (frequentemente por canais acessórios laterais).</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Região Anatômica:</strong> Encontra-se disposto ao longo da face lateral da raiz de um elemento dentário sem vitalidade pulpar.</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Expansão:</strong> Idêntico ao periapical. Caso ganhe volume, provoca uma tumefação localizada na mucosa gengival lateral correspondente.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Complicações e Tratamento:</strong> Perda focal da lâmina dura na lateral. Exige diagnóstico diferencial criterioso (teste de vitalidade e exames periodontais) para não ser confundido com cisto periodontal lateral (de desenvolvimento).</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:28px" id="rx-grid"></div>
+  <div id="rx-panel" style="display:none">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="badge badge-teal" id="rx-badge"></div>
+      <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="copyRx()"><i class="fas fa-copy"></i> Copiar Receita</button>
+    </div>
+    <div class="rx-block" id="rx-content"></div>
+  </div>
+</section>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('cisto-residual')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-amber-50 text-amber-700 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 2 (Moderado)</span>
-                        <h3 class="text-lg font-bold text-slate-800">3. Cisto Periapical Residual</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-cisto-residual" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="cisto-residual" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Causa / Etiologia:</strong> Ocorre quando um cisto periapical preexistente não é curetado ou removido adequadamente no momento em que o dente é extraído.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Região Anatômica:</strong> Desenvolve-se exclusivamente dentro de áreas edêntulas (onde antes ficava o dente extraído), na região do alvéolo.</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Expansão:</strong> Costuma permanecer assintomático, mas pode se expandir lentamente ao longo dos anos, gerando abaulamento do osso alveolar.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Complicações e Tratamento:</strong> Apresenta-se como radiotransparência circular/oval. Destrói o osso do rebordo, prejudicando futuros implantes ou próteses. Exige reintervenção cirúrgica para curetagem da loja óssea.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<!-- ===== SEÇÃO 4: CHECKLIST ===== -->
+<section id="checklist" class="section">
+  <div style="margin-bottom:24px">
+    <div class="section-title"><i class="fas fa-list-check" style="color:#2dd4bf;margin-right:10px"></i>Checklist de Avaliação Clínica</div>
+    <div class="section-sub">Marque cada item enquanto pratica com sua colega. Acompanhe seu progresso em tempo real.</div>
+  </div>
 
-            <div class="text-xs font-bold text-sky-600 uppercase tracking-wider pl-1 mt-6 mb-2">Cistos de Desenvolvimento</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div class="card" style="text-align:center">
+      <div style="font-size:36px;font-weight:700;color:#2dd4bf" id="check-count">0</div>
+      <div style="font-size:12px;color:#64748b;margin-top:4px">Itens concluídos</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:36px;font-weight:700;color:#0ea5e9" id="check-pct">0%</div>
+      <div style="font-size:12px;color:#64748b;margin-top:4px">Desempenho</div>
+    </div>
+  </div>
+  <div class="progress-bar" style="margin-bottom:24px"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('cisto-dentigero')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-red-50 text-red-700 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 5 (Alta Complexidade)</span>
-                        <h3 class="text-lg font-bold text-slate-800">4. Cisto Dentígero</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-cisto-dentigero" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="cisto-dentigero" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Causa / Etiologia:</strong> Separação do folículo pericoronário ao redor da coroa de um dente não erupcionado por acúmulo de líquido. É o cisto de desenvolvimento mais comum. Pode ter patogênese inflamatória secundária.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Região Anatômica:</strong> Circunda a coroa de dentes inclusos na junção amelocementária. Altamente prevalente em <strong>terceiros molares inferiores</strong> e <strong>caninos superiores</strong>.</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Expansão:</strong> Quando grande, provoca visível expansão óssea facial indolor. Se sofrer infecção secundária, gera dor aguda, eritema e edema amolecido/inflamatório.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Complicações e Tratamento:</strong> Deslocamento dentário severo e grande reabsorção de raízes vizinhas. Radiograficamente, o espaço radiolúcido deve passar de 3 a 4 mm. Lesões massivas exigem **Marsupialização** (janela cirúrgica) antes da enucleação definitiva.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div id="check-groups"></div>
+  <div style="display:flex;gap:10px;margin-top:20px">
+    <button class="btn btn-success" onclick="checkAll()"><i class="fas fa-check-double"></i> Marcar Todos</button>
+    <button class="btn btn-ghost" onclick="resetCheck()"><i class="fas fa-rotate-left"></i> Resetar</button>
+  </div>
+</section>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('cisto-orto')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-orange-50 text-orange-700 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 4 (Atenção à Recidiva)</span>
-                        <h3 class="text-lg font-bold text-slate-800">5. Cisto Odontogênico Ortoceratinizado</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-cisto-orto" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="cisto-orto" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Causa / Etiologia:</strong> Cisto de desenvolvimento com revestimento epitelial puramente ortoceratinizado (representa 7 a 17% dos cistos ceratinizados e já foi considerado variante do ceratocisto). Predileção por homens adultos jovens.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Região Anatômica:</strong> Ocorre duas vezes mais na <strong>mandíbula</strong>, apresentando forte predileção pela sua **região posterior (corpo e ramo)**.</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Expansão:</strong> Geralmente assintomático e, ao contrário de outros cistos volumosos, **não costuma apresentar expansão óssea clínica** (edema raro).</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Complicações e Tratamento:</strong> Imagem unilocular que mimetiza perfeitamente um cisto dentígero radiograficamente. Exige exame anátomo-patológico obrigatório para diagnóstico. Tratado por enucleação com curetagem (taxa de recorrência de ~2%).</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<!-- ===== SEÇÃO 5: COMPARTILHAR ===== -->
+<section id="compartilhar" class="section">
+  <div class="section-title"><i class="fas fa-share-alt" style="color:#2dd4bf;margin-right:10px"></i>Como Compartilhar com Sua Amiga</div>
+  <div class="section-sub">Ela no celular, você no computador — guia passo a passo.</div>
 
+  <div style="display:grid;gap:16px">
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;color:#2dd4bf;margin-bottom:12px"><i class="fas fa-github" style="margin-right:8px"></i>Opção 1 — GitHub Pages (Recomendado, Gratuito)</div>
+      <div style="display:grid;gap:10px">
+        <div class="card-sm"><span style="font-size:12px;font-weight:700;color:#0ea5e9">PASSO 1 </span><br><span class="value">Acesse <strong style="color:#2dd4bf">github.com</strong> → crie uma conta gratuita (se não tiver)</span></div>
+        <div class="card-sm"><span style="font-size:12px;font-weight:700;color:#0ea5e9">PASSO 2 </span><br><span class="value">Clique em "New Repository" → nomeie como <code style="background:#040d1a;padding:2px 8px;border-radius:4px;color:#fbbf24">odonto-sim</code> → marque "Public"</span></div>
+        <div class="card-sm"><span style="font-size:12px;font-weight:700;color:#0ea5e9">PASSO 3 </span><br><span class="value">Dentro do repositório: "Add file" → "Upload files" → arraste o arquivo <code style="background:#040d1a;padding:2px 8px;border-radius:4px;color:#fbbf24">odonto_treinamento.html</code> → renomeie para <code style="background:#040d1a;padding:2px 8px;border-radius:4px;color:#fbbf24">index.html</code></span></div>
+        <div class="card-sm"><span style="font-size:12px;font-weight:700;color:#0ea5e9">PASSO 4 </span><br><span class="value">Vá em Settings → Pages → Source: "Deploy from branch" → selecione "main" → Save</span></div>
+        <div class="card-sm"><span style="font-size:12px;font-weight:700;color:#0ea5e9">PASSO 5 </span><br><span class="value">Aguarde ~2 minutos. O link gerado será: <code style="background:#040d1a;padding:2px 8px;border-radius:4px;color:#2dd4bf">seu-usuario.github.io/odonto-sim</code> — mande para ela pelo WhatsApp!</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;color:#fbbf24;margin-bottom:12px"><i class="fas fa-bolt" style="margin-right:8px"></i>Opção 2 — Netlify Drop (30 segundos, sem conta)</div>
+      <div style="display:grid;gap:10px">
+        <div class="card-sm"><span class="value">Acesse <strong style="color:#fbbf24">app.netlify.com/drop</strong></span></div>
+        <div class="card-sm"><span class="value">Arraste o arquivo .html para a área indicada</span></div>
+        <div class="card-sm"><span class="value">Receba o link instantâneo! Ex: <code style="background:#040d1a;padding:2px 8px;border-radius:4px;color:#fbbf24">random-name.netlify.app</code></span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;color:#fb7185;margin-bottom:12px"><i class="fas fa-file-pdf" style="margin-right:8px"></i>Opção 3 — Salvar como PDF (para impressão)</div>
+      <div style="display:grid;gap:10px">
+        <div class="card-sm"><span class="value">Abra o arquivo .html no Chrome ou Edge</span></div>
+        <div class="card-sm"><span class="value">Pressione <code style="background:#040d1a;padding:2px 8px;border-radius:4px;color:#fb7185">Ctrl+P</code> (Windows) ou <code style="background:#040d1a;padding:2px 8px;border-radius:4px;color:#fb7185">Cmd+P</code> (Mac)</span></div>
+        <div class="card-sm"><span class="value">Selecione "Salvar como PDF" e marque <strong style="color:#fb7185">"Imprimir gráficos de fundo"</strong></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid #162847;padding:20px;text-align:center;color:#334155;font-size:12px">
+  <i class="fas fa-tooth" style="color:#2dd4bf;margin-right:6px"></i>
+  OdontoSIM — Baseado no Tratado de Cirurgia Periodontal, Patologia Oral e Síntese Avançada · UniFECAF
+</footer>
+
+<script>
+// ===========================
+// DATA — CASOS CLÍNICOS
+// ===========================
+const CASES = [
+  {
+    id:1, title:"Pericoronarite Aguda",
+    badge:"badge-rose", badgeLabel:"Urgência Máxima",
+    category:"Siso / Pericoronarite",
+    speech:'"Doutor, não consigo abrir a boca direito, dói para engolir e sinto uma pontada que sobe até meu ouvido deste lado. Meu dente do fundo parece estar saindo e fica prendendo a bochecha."',
+    diagnosis:"Pericoronarite Aguda (Capusite Infecciosa)",
+    justification:"Trismo (não abre boca), disfagia (dói para engolir), otalgia reflexa (dor no ouvido = irradiação pelo V3), e sensação de dente emergindo com capuz de tecido mole traumatizando a mucosa. Clássico do 3º molar inferior semi-incluso.",
+    conduct:`1. NÃO realizar exodontia ou ulectomia na fase aguda — risco de disseminação para espaços fasciais cervicais (angina de Ludwig).\n2. Irrigação mecânica forçada sob o capuz com seringa curva + Clorexidina 0,12% ou SF 0,9%.\n3. Instrução de higiene reforçada. Compressa de gelo extraoral.\n4. Agendar exodontia após 7–10 dias (fase fria).`,
+    prescription:`Amoxicilina 500mg — 1 cáps. de 8/8h por 7 dias\nNimesulida 100mg — 1 comp. de 12/12h por 3 dias (após alimentação)\nDipirona Sódica 500mg — 1 comp. de 6/6h por 48h (SOS dor intensa)\nDigliconato de Clorexidina 0,12% — bochecho 15ml por 1 min, 12/12h, por 7 dias`,
+    prognosis:"Excelente após exodontia do elemento na fase fria. Reservado se houver trismo progressivo sem melhora em 48h (investigar celulite de espaço)."
+  },
+  {
+    id:2, title:"Abscesso Periodontal",
+    badge:"badge-amber", badgeLabel:"Urgência Alta",
+    category:"Periodonto / Abscesso",
+    speech:'"Tenho um caroço redondo e mole perto da gengiva, que dói quando aperto. Sinto meu dente um pouco frouxo e parece que ele está saindo para fora. Tem saído um líquido amarelado quando aperto."',
+    diagnosis:"Abscesso Periodontal Agudo",
+    justification:"Tumefação flutuante localizada (caroço mole = pus coletado), mobilidade dentária (envolvimento do ligamento periodontal), extrusão dental (edema do LP), e drenagem espontânea de exsudato purulento. Teste de vitalidade: POSITIVO (dente vivo — diferencia do abscesso periapical).",
+    conduct:`1. Drenagem: via sulco gengival com sonda periodontal ou incisão externa na área de maior flutuação.\n2. Irrigação abundante com SF 0,9%.\n3. Raspagem subgengival emergencial na bolsa comprometida.\n4. Antibiótico APENAS se: febre, mal-estar sistêmico, trismo ou celulite difusa.\n5. Encaminhar para terapia periodontal definitiva após resolução do quadro agudo.`,
+    prescription:`Amoxicilina 500mg — 1 cáps. de 8/8h por 7 dias (se houver febre ou sinais sistêmicos)\nNimesulida 100mg — 1 comp. de 12/12h por 3 dias\nDipirona Sódica 500mg — 1 comp. de 6/6h por 48h (SOS)\nDigliconato de Clorexidina 0,12% — bochecho 15ml/1min, 12/12h, por 7 dias`,
+    prognosis:"Favorável se drenagem eficaz e terapia periodontal definitiva (raspagem e alisamento radicular) realizada em 7–14 dias. Reservado se perda óssea angular grave."
+  },
+  {
+    id:3, title:"Gengivite Necrosante",
+    badge:"badge-rose", badgeLabel:"Urgência Máxima",
+    category:"Gengiva / Necrose",
+    speech:'"Doutor, minha gengiva começou a sangrar do nada, tenho vergonha de falar com as pessoas porque estou com um mau hálito terrível e tenho uma dor insuportável. Parece que a gengiva entre os dentes derreteu."',
+    diagnosis:"Gengivite Ulcerativa Necrosante (GUN)",
+    justification:"Tríade clássica de Listgarten: necrose das papilas em sacador de bocado (papilas decapitadas), pseudomembrana esbranquiçada/cinzenta + sangramento espontâneo + dor lancinante + halitose (fetor oris) por putrefação bacteriana anaeróbia. Associada a imunossupressão, estresse, tabagismo.",
+    conduct:`1. Limpeza superficial gentil com gaze embebida em Clorexidina 0,12% ou H₂O₂ 3% (10 volumes).\n2. CONTRAINDICADO: raspagem subgengival na fase aguda (risco de bacteremia sistêmica).\n3. Instrução de higiene ultrassuave com escova pós-cirúrgica.\n4. Investigar fator imunossupressor: HIV, desnutrição, uso de corticoides.\n5. Retorno em 3 dias para avaliar resposta.`,
+    prescription:`Metronidazol 400mg — 1 comp. de 8/8h por 7 dias (MANDATÓRIO — ação contra anaeróbios estritos/espiroquetas)\nDipirona Sódica 500mg — 1 comp. de 6/6h por 48h\nDigliconato de Clorexidina 0,12% — bochecho 15ml/1min, 12/12h, por 7 dias\nPeróxido de Hidrogênio 3% (H₂O₂) — irrigação local suave 1x ao dia`,
+    prognosis:"Bom com tratamento imediato e correção dos fatores de risco. Pode evoluir para Periodontite Necrosante com perda óssea se não tratado."
+  },
+  {
+    id:4, title:"Abscesso Periapical Agudo",
+    badge:"badge-rose", badgeLabel:"Urgência Máxima",
+    category:"Endodontia / Periapical",
+    speech:'"Doutor, tenho uma dor pulsante e latejante que não para. Piorou muito quando eu deitei à noite. Meu dente está extremamente sensível quando bato nele de cima. Apareceu um inchaço na bochecha."',
+    diagnosis:"Abscesso Periapical Agudo (Abscesso Dentoalveolar)",
+    justification:"Dor pulsátil espontânea (pressão intrapulpar elevada), piora em decúbito (aumento do fluxo cefálico), hipersensibilidade extrema à percussão vertical (inflamação do ligamento periodontal apical), tumefação de partes moles (extensão do processo para tecidos vizinhos). Teste de vitalidade: NEGATIVO (necrose pulpar).",
+    conduct:`1. Se houver flutuação intraoral: incisão e drenagem cirúrgica imediata.\n2. Abertura coronária de urgência (endodontia de emergência) para aliviar pressão de gás/pus no osso.\n3. Não suturar — manter drenagem aberta.\n4. Irrigação com NaOCl e curativo com cresophene/formocresol.\n5. Tratamento definitivo: canal ou exodontia conforme prognóstico estrutural.`,
+    prescription:`Amoxicilina + Clavulanato 875mg — 1 comp. de 12/12h por 7 dias\nDipirona Sódica 1g — 1 comp. de 6/6h por 48h\nNimesulida 100mg — 1 comp. de 12/12h por 3 dias\nDigliconato de Clorexidina 0,12% — bochecho 15ml/1min, 12/12h, por 7 dias`,
+    prognosis:"Excelente se drenagem eficaz e causa infecciosa removida (canal ou exodontia). Vigilância em pacientes imunossuprimidos pela extensão fascial."
+  },
+  {
+    id:5, title:"Alveolite Seca",
+    badge:"badge-amber", badgeLabel:"Urgência Alta",
+    category:"Pós-exodontia / Alveolite",
+    speech:'"Doutora, tirei um dente faz 3 dias e a dor foi piorando em vez de melhorar. Agora a dor irradia para o ouvido e o olho. Olhei no espelho e o buraco está vazio e branquinho."',
+    diagnosis:"Alveolite Seca (Osteíte Alveolar / Dry Socket)",
+    justification:"Dor progressiva após exodontia (não resolve em 48–72h), irradiação para ouvido e olho (neuralgiforme pelo nervo alveolar inferior), alveólo vazio com parede óssea exposta esbranquiçada visível ao espelho. Fisiopatologia: fibrinólise prematura do coágulo — comum em tabagistas, uso de contraceptivos orais e higiene excessiva.",
+    conduct:`1. NÃO curetagem agressiva (causará dor extrema e sangramento desnecessário).\n2. Irrigação suavíssima com SF morno ou Clorexidina 0,12%.\n3. Inserção de curativo alveolar: pasta de Alveogyl® ou Alveosan® (eugenol + iodofórmio + bálsamo do Peru) — troca a cada 3–4 dias.\n4. Anestesia local antes do procedimento.\n5. Alertar sobre evitar canudo, cuspir e bochechar vigoroso.`,
+    prescription:`Dipirona Sódica 500mg — 1 comp. de 6/6h (horário fixo — não sob demanda)\nNimesulida 100mg — 1 comp. de 12/12h por 3 dias\nDigliconato de Clorexidina 0,12% — irrigação local suavíssima com seringa`,
+    prognosis:"Autolimitada — resolução em 7–14 dias com trocas regulares do curativo. Não prescrever antibiótico (não é infecção, é lise do coágulo)."
+  },
+  {
+    id:6, title:"Lesão Endo-Perio",
+    badge:"badge-amber", badgeLabel:"Urgência Alta",
+    category:"Endo-Perio / Combinada",
+    speech:'"Tenho um gosto amargo insuportável no fundo da boca e meu dente de trás parece estar maior que os outros ao morder. Já fiz canal nesse dente há anos mas continua doendo e saindo um líquido fedorento da gengiva."',
+    diagnosis:"Lesão Endo-Perio Combinada Verdadeira",
+    justification:"Gosto amargo = supuração ativa (fístula ou bolsa com drenagem crônica), sensação de dente extruído (LP inflamado), histórico de tratamento endodôntico (descarta como causa isolada pulpar), saída de secreção purulenta pela gengiva. Radiografia: imagem em J ou raquete contornando ápice + lateral da raiz.",
+    conduct:`1. A ORDEM IMPORTA: tratar ENDODONTIA primeiro (retreatment do canal).\n2. Canal limpo e obturado → aguardar 2–3 meses.\n3. Se bolsa periodontal persistir após cura endodôntica → raspagem e alisamento radicular ou cirurgia periodontal.\n4. Se raspar antes: destrói o potencial de reinserção do LP que poderia curar sozinho.`,
+    prescription:`Amoxicilina + Clavulanato 875mg — 1 comp. de 12/12h por 7 dias\nDipirona Sódica 500mg — 1 comp. de 6/6h por 48h\nNimesulida 100mg — 1 comp. de 12/12h por 3 dias\nDigliconato de Clorexidina 0,12% — bochecho 15ml/1min, 12/12h`,
+    prognosis:"Reservado a favorável, dependente da extensão da perda óssea e da resposta após retreatment endodôntico. Pode exigir regeneração óssea guiada."
+  },
+  {
+    id:7, title:"Alveolite Úmida",
+    badge:"badge-sky", badgeLabel:"Urgência Moderada",
+    category:"Pós-exodontia / Infecção",
+    speech:'"Tirei um dente faz 4 dias. A dor não sumiu, mas o buraco tem uma massa cinzenta e fedorenta dentro. Parece que está podre. Tenho febre leve desde ontem."',
+    diagnosis:"Alveolite Úmida (Alvéolo Séptico / Osteíte Supurativa)",
+    justification:"Coágulo necrótico cinzento com odor pútrido (contaminação bacteriana do coágulo), dor moderada contínua (não a dor lancinante neuralgiforme da seca), febre leve (sinal de infecção ativa). Diferente da seca: o alvéolo NÃO está vazio — contém coágulo infectado.",
+    conduct:`1. Anestesia local.\n2. Curetagem cuidadosa para remover o coágulo necrótico e debris.\n3. Irrigação abundante com SF aquecido.\n4. Objetivo: induzir novo sangramento saudável para formação de coágulo limpo.\n5. Curativo aberto ou sutura solta — NÃO fechar hermeticamente.`,
+    prescription:`Amoxicilina 500mg — 1 cáps. de 8/8h por 7 dias\nDipirona Sódica 500mg — 1 comp. de 6/6h por 48h\nNimesulida 100mg — 1 comp. de 12/12h por 3 dias\nDigliconato de Clorexidina 0,12% — irrigação local suave`,
+    prognosis:"Bom com curetagem e antibioticoterapia. Resolução em 5–7 dias. Monitorar extensão para celulite."
+  },
+  {
+    id:8, title:"Pulpite Irreversível",
+    badge:"badge-amber", badgeLabel:"Urgência Alta",
+    category:"Endodontia / Pulpite",
+    speech:'"Doutor, tenho uma dor fortíssima que começou sozinha, sem eu morder nada. Piora muito quando como ou bebo algo quente, mas quando coloco gelo melhora um pouco. À noite fico acordado de dor e percebo que ela irradia para o ouvido e a têmpora."',
+    diagnosis:"Pulpite Irreversível Sintomática (PIS)",
+    justification:"Dor espontânea (sem estímulo = pressão interna alta), piora ao calor (vasodilatação aumenta pressão intrapulpar), alívio transitório ao frio (vasoconstrição reduz pressão), piora noturna em decúbito (fluxo sanguíneo cefálico), irradiação para ouvido/têmpora (convergência de fibras nervosas do V3). Vitalidade: POSITIVA (polpa ainda viva, mas inflamada irreversivelmente).",
+    conduct:`1. Anestesia: bloqueio do nervo alveolar inferior (BNAI) ou infiltrativa conforme o dente.\n2. Pulpectomia de urgência: abertura coronária, remoção da polpa, instrumentação e curativo com PMCC/cresophene.\n3. Alívio imediato da pressão intrapulpar.\n4. Tratamento definitivo: conclusão do canal na sessão seguinte.`,
+    prescription:`Dipirona Sódica 1g — 1 comp. de 6/6h (horário fixo, não SOS)\nNimesulida 100mg — 1 comp. de 12/12h por 3 dias\nNão há indicação de antibiótico (não é infecção, é inflamação pulpar)`,
+    prognosis:"Excelente após pulpectomia e conclusão do tratamento endodôntico. Canal bem obturado = dente restaurado com prognóstico de décadas."
+  }
+];
+
+// ===========================
+// DATA — SUTURAS
+// ===========================
+const SUTURAS = [
+  {
+    name:"Ponto Simples Isolado",
+    sub:"O operário do dia a dia",
+    icon:'<i class="fas fa-arrow-up" style="color:#040d1a;font-size:18px"></i>',
+    tabs:[
+      `<strong style="color:#2dd4bf">Ângulo de entrada:</strong> 90° perpendicular à mucosa (nunca oblíquo — lacera o epitélio).<br><br><strong style="color:#2dd4bf">Distância da borda:</strong> 2,0 a 3,0 mm da linha de incisão. Menos que isso: a força elástica do retalho rasgará a margem.<br><br><strong style="color:#2dd4bf">Profundidade:</strong> englobe espessura homogênea de tecido conjuntivo nos dois lados para evitar desnível de fechamento.<br><br><strong style="color:#2dd4bf">Nó:</strong> Nó de cirurgião (2 + 1 + 1 alças). Lateralize o nó para fora da linha de incisão. Cauda: 3–5mm.`,
+      `<ul style="list-style:none;display:grid;gap:10px">
+        <li>✅ Fechamento de feridas <strong style="color:#2dd4bf">lineares limpas e sem tensão</strong></li>
+        <li>✅ Aproximação de papilas interproximais pós-exodontia convencional</li>
+        <li>✅ Biópsias orais pequenas</li>
+        <li>✅ Qualquer cirurgia que não exija controle especial de tensão ou hemostasia</li>
+      </ul>`,
+      `<strong style="color:#2dd4bf">Segurança independente:</strong> cada nó é autônomo. Se o paciente romper um ponto mastigando, os demais mantêm a ferida fechada (deiscência parcial, não total).<br><br><strong style="color:#2dd4bf">Atenção à isquemia:</strong> "encostar é suturar, apertar é estrangular" — bordas devem apenas se tocar. Aperto excessivo = isquemia + necrose de papila.`
+    ]
+  },
+  {
+    name:"Ponto em X (Cruzado em 8)",
+    sub:"O guardião do coágulo",
+    icon:'<i class="fas fa-xmark" style="color:#040d1a;font-size:18px"></i>',
+    tabs:[
+      `<strong style="color:#2dd4bf">Mecânica do cruzamento:</strong> entre diagonalmente no lado vestibular (2–3mm da borda), cruze o fio diagonalmente sobre a ferida e entre no lado lingual/palatino simétricamente.<br><br><strong style="color:#2dd4bf">Retorne:</strong> cruze novamente pelo lado oposto criando o padrão geométrico em "X" visível sobre a mucosa.<br><br><strong style="color:#2dd4bf">Área de compressão:</strong> o cruzamento aumenta substancialmente a superfície de contato do fio com o tecido mole alveolar.`,
+      `<ul style="list-style:none;display:grid;gap:10px">
+        <li>✅ <strong style="color:#2dd4bf">Alvéolos pós-exodontia</strong> — padrão para segurar esponja de colágeno/hemostática dentro do osso</li>
+        <li>✅ Hemorragia em lençol da mucosa alveolar macia (sangramentos difusos)</li>
+        <li>✅ Aproximação de papilas gengivais largas na região de molares</li>
+        <li>✅ Fechamento de alvéolos onde se quer evitar deiscência por mastigação</li>
+      </ul>`,
+      `<strong style="color:#2dd4bf">Hemostasia mecânica superior:</strong> ao cruzar o fio, comprime-se a microcirculação capilar periférica sem necessidade de ligaduras profundas. Ideal para pequenos vasos do tecido alveolar mole.<br><br>Distribui a tensão do nó em 4 pontos de entrada/saída na mucosa, reduzindo concentração de força em um único local.`
+    ]
+  },
+  {
+    name:"Colchoeiro Vertical (Donati)",
+    sub:"Longe-longe, perto-perto",
+    icon:'<i class="fas fa-arrows-up-down" style="color:#040d1a;font-size:18px"></i>',
+    tabs:[
+      `<strong style="color:#2dd4bf">1ª passagem (longe-longe):</strong> entre a 4mm da borda, na profundidade total do tecido conjuntivo, e saia 4mm do outro lado.<br><br><strong style="color:#2dd4bf">2ª passagem (perto-perto):</strong> inverta a direção da agulha no mesmo plano vertical perpendicular à ferida. Entre 1mm da borda e saia 1mm do lado inicial.<br><br><strong style="color:#2dd4bf">Nó:</strong> dê o nó sobre a borda onde iniciou. O resultado: fio passa em dois planos — profundo (contém a tensão) e superficial (everte os bordos).`,
+      `<ul style="list-style:none;display:grid;gap:10px">
+        <li>✅ Fechamento de retalhos <strong style="color:#2dd4bf">espessos de espessura total</strong></li>
+        <li>✅ Áreas com <strong style="color:#2dd4bf">alta tensão elástica</strong> muscular (região retromolar, incisões extensas)</li>
+        <li>✅ Fechamento pós-remoção de sisos inclusos com incisão envelope ou em L</li>
+        <li>✅ Qualquer ferida onde as bordas tendem a inverter (dobrar para dentro)</li>
+      </ul>`,
+      `<strong style="color:#2dd4bf">Eversão total dos bordos:</strong> é o ponto supremo para garantir que as bordas se encontrem viradas ligeiramente para fora. Se as bordas inverterem (dobram para dentro), as células epiteliais migram para o interior da ferida, impedindo a união do tecido conjuntivo e gerando falha cirúrgica.<br><br>A dupla passagem (profunda + superficial) cria um vetor de força que literalmente "joga" as margens para cima e para fora — efeito impossível com o ponto simples em tecidos espessos.`
+    ]
+  },
+  {
+    name:"Colchoeiro Horizontal (Ponto em U)",
+    sub:"Distribuição de carga planar",
+    icon:'<i class="fas fa-arrows-left-right" style="color:#040d1a;font-size:18px"></i>',
+    tabs:[
+      `<strong style="color:#2dd4bf">Trajetória paralela:</strong> entre a 2–3mm da borda em um ponto, avance paralelamente à linha de incisão dentro do tecido conjuntivo, saia no mesmo lado mas 4–6mm à frente.<br><br><strong style="color:#2dd4bf">Cruzamento:</strong> passe o fio sobre a ferida, entre no lado oposto 4–6mm à frente (espelhado) e saia paralelo, retornando para dar o nó no ponto inicial.<br><br>O fio corre <strong style="color:#2dd4bf">horizontalmente no interior do tecido</strong> — nunca perpendicular à ferida.`,
+      `<ul style="list-style:none;display:grid;gap:10px">
+        <li>✅ Fixação de <strong style="color:#2dd4bf">enxertos de tecido conjuntivo autólogo</strong> colhidos do palato</li>
+        <li>✅ Fechamento de <strong style="color:#2dd4bf">comunicações bucosinusais</strong> (retalho puxado com força sobre alvéolo superior)</li>
+        <li>✅ Suturas sobre membranas de Regeneração Óssea Guiada (ROG/GBR)</li>
+        <li>✅ Tecidos frágeis onde ponto simples rasgaria por concentração de força</li>
+      </ul>`,
+      `<strong style="color:#2dd4bf">Distribuição horizontal da carga:</strong> em vez de concentrar a força do nó em um único ponto pequeno da mucosa (que rasgaria tecidos frágeis), distribui a tração mecânica ao longo de um bloco horizontal de tecido.<br><br>Isso <strong style="color:#2dd4bf">blinda a microcirculação capilar</strong> da borda da ferida, evitando áreas de isquemia localizada — fundamental em enxertos onde a vascularização é crítica para a sobrevida do tecido transplantado.`
+    ]
+  },
+  {
+    name:"Sutura Suspensória (Sling)",
+    sub:"O truque dos esteticistas",
+    icon:'<i class="fas fa-anchor" style="color:#040d1a;font-size:18px"></i>',
+    tabs:[
+      `<strong style="color:#2dd4bf">Conceito:</strong> o fio NÃO une dois retalhos entre si. Ele usa o próprio dente como polia de ancoragem.<br><br><strong style="color:#2dd4bf">Técnica:</strong> passe o fio pelo retalho vestibular (2–3mm da borda), circunde o colo do dente passando pelo espaço interproximal para o lado lingual/palatino, envolva o dente pelo lado lingual, retorne pelo outro espaço interproximal e dê o nó no vestibular com o fio inicial.<br><br>Isso suspende o retalho <strong style="color:#2dd4bf">contra a anatomia do próprio dente</strong> do paciente.`,
+      `<ul style="list-style:none;display:grid;gap:10px">
+        <li>✅ <strong style="color:#2dd4bf">Cirurgias de recobrimento radicular</strong> — retalho reposicionado coronalmente (Cairo RT1/Miller I)</li>
+        <li>✅ Aumento de coroa clínica estética onde apenas a face vestibular foi operada</li>
+        <li>✅ Procedimentos de enxerto gengival livre onde se quer tracionamento coronal do tecido</li>
+        <li>✅ Qualquer retalho vestibular sem retalho lingual correspondente para fixar</li>
+      </ul>`,
+      `<strong style="color:#2dd4bf">Prevenção de recessão pós-op:</strong> a gengiva, após cirurgia de recobrimento, tende a migrar apicalmente (descer) por ação da gravidade e movimentação muscular do lábio durante os primeiros dias. A sutura suspensória mantém o retalho coronalizado de forma ativa, ancorada na estrutura dentária.<br><br>Evita que o tecido "escorregue" e comprometa o recobrimento radicular alcançado cirurgicamente.`
+    ]
+  },
+  {
+    name:"Sutura Contínua Simples",
+    sub:"Velocidade e extensão",
+    icon:'<i class="fas fa-infinity" style="color:#040d1a;font-size:18px"></i>',
+    tabs:[
+      `<strong style="color:#2dd4bf">Início:</strong> nó de cirurgião em uma extremidade da incisão (nó de ancoragem).<br><br><strong style="color:#2dd4bf">Progressão:</strong> passe o fio em ângulo de 45–60° em relação à incisão, alternando os lados, com espaçamento regular de 4–5mm entre cada passagem. Mantenha tensão uniforme a cada passe.<br><br><strong style="color:#2dd4bf">Encerramento:</strong> ao chegar na outra extremidade, faça o nó final com a alça do último passe (não com a ponta livre) — isso cria o "nó de fechamento" que trava toda a linha.`,
+      `<ul style="list-style:none;display:grid;gap:10px">
+        <li>✅ Grandes cirurgias reconstrutivas (de canino a molar)</li>
+        <li>✅ Alveoloplastias extensas</li>
+        <li>✅ Suturas de alinhamento em rebordos edêntulos longos (preparação protética)</li>
+        <li>✅ Situações onde velocidade de execução é prioritária</li>
+      </ul>`,
+      `<strong style="color:#2dd4bf">⚠️ Risco crítico:</strong> toda a linha depende de apenas 2 nós. Se o paciente romper o fio no meio, <em>toda a ferida cirúrgica se abrirá instantaneamente</em> (deiscência total). Por isso, exige maestria no controle de tensão uniforme para não criar efeito "sanfona" na mucosa.<br><br>Vantagem: rápida execução e distribuição de tensão ao longo de toda a incisão.`
+    ]
+  },
+  {
+    name:"Chuleio Festonado (Contínua Ancorada)",
+    sub:"A evolução da contínua",
+    icon:'<i class="fas fa-link" style="color:#040d1a;font-size:18px"></i>',
+    tabs:[
+      `<strong style="color:#2dd4bf">Diferença-chave da contínua simples:</strong> a cada passagem pela mucosa, o fio passa <em>por dentro da alça anterior</em> antes de ser tracionado — criando uma "trava mecânica" individual a cada ponto.<br><br><strong style="color:#2dd4bf">Resultado:</strong> bloqueia o deslizamento do fio ao longo da incisão. Cada ponto é mecanicamente travado, mesmo que o fio se rompa no meio.<br><br><strong style="color:#2dd4bf">Aspecto visual:</strong> festões (ondulações regulares) ao longo da linha de sutura.`,
+      `<ul style="list-style:none;display:grid;gap:10px">
+        <li>✅ Fechamento de <strong style="color:#2dd4bf">grandes áreas doadoras no palato</strong> (sangramento capilar persistente)</li>
+        <li>✅ Áreas extensas com sangramento difuso onde a hemostasia contínua é crítica</li>
+        <li>✅ Quando se deseja estabilidade posicional superior à contínua simples sem usar pontos isolados</li>
+      </ul>`,
+      `<strong style="color:#2dd4bf">Dupla vantagem:</strong> garante melhor estabilidade posicional que a contínua simples E promove excelente controle hemostático das bordas pela compressão festonada.<br><br>A trava individual a cada passagem significa que, ao contrário da contínua simples, a ruptura de um ponto não compromete toda a linha — proteção parcial equivalente aos pontos isolados com velocidade próxima à contínua.`
+    ]
+  }
+];
+
+// ===========================
+// DATA — RECEITUÁRIO
+// ===========================
+const RX = [
+  {
+    name:"Gengivite Necrosante (GUN)",
+    color:"badge-rose",
+    rx:`CLÍNICA ODONTOLÓGICA — PRESCRIÇÃO MÉDICA
+Data: ${new Date().toLocaleDateString('pt-BR')}
+
+PATOLOGIA: Gengivite Ulcerativa Necrosante (GUN)
+
+─────────────────────────────────────────
+ANTIBIÓTICO (MANDATÓRIO — anaeróbios):
+Metronidazol 400mg
+Tomar 1 comprimido de 8 em 8 horas por 7 dias.
+(Não ingerir bebidas alcoólicas durante o tratamento)
+
+─────────────────────────────────────────
+ANALGÉSICO:
+Dipirona Sódica 500mg
+Tomar 1 comprimido de 6 em 6 horas por 48 horas.
+(Horário fixo — não esperar a dor iniciar)
+
+─────────────────────────────────────────
+ANTI-INFLAMATÓRIO:
+Nimesulida 100mg
+Tomar 1 comprimido de 12 em 12 horas por 3 dias.
+(Sempre após alimentação. Contraindicado em gastrite grave)
+
+─────────────────────────────────────────
+ANTISSÉPTICO LOCAL:
+Digliconato de Clorexidina 0,12% (sem álcool)
+Bochechar 15ml por 1 minuto, de 12 em 12 horas.
+Iniciar 24h após o procedimento. Usar por no máximo 7–10 dias.
+Evitar uso prolongado (pigmentação dentária >14 dias).
+
+─────────────────────────────────────────
+OBSERVAÇÕES CLÍNICAS:
+⚠ Raspagem subgengival CONTRAINDICADA na fase aguda.
+⚠ Investigar: HIV, desnutrição, tabagismo, estresse severo.
+Retorno em 3 dias para avaliação da resposta.`
+  },
+  {
+    name:"Pericoronarite Aguda",
+    color:"badge-rose",
+    rx:`CLÍNICA ODONTOLÓGICA — PRESCRIÇÃO MÉDICA
+Data: ${new Date().toLocaleDateString('pt-BR')}
+
+PATOLOGIA: Pericoronarite Aguda (3º Molar)
+
+─────────────────────────────────────────
+ANTIBIÓTICO:
+Amoxicilina 500mg
+Tomar 1 cápsula de 8 em 8 horas por 7 dias.
+
+OU (se pericoronarite refratária / beta-lactamase):
+Amoxicilina + Clavulanato 875mg
+Tomar 1 comprimido de 12 em 12 horas por 7 dias.
+
+─────────────────────────────────────────
+ANALGÉSICO:
+Dipirona Sódica 500mg
+Tomar 1 comprimido de 6 em 6 horas por 48 horas.
+
+─────────────────────────────────────────
+ANTI-INFLAMATÓRIO:
+Nimesulida 100mg
+Tomar 1 comprimido de 12 em 12 horas por 3 dias.
+
+─────────────────────────────────────────
+ANTISSÉPTICO LOCAL:
+Digliconato de Clorexidina 0,12%
+Irrigação forçada sob o capuz com seringa curva 3x/dia.
+Bochecho 15ml/1min a cada 12h.
+
+─────────────────────────────────────────
+OBSERVAÇÕES:
+⚠ NÃO realizar exodontia na fase aguda.
+⚠ Se trismo severo e refratário: avaliar hospitalização.
+Exodontia agendada após 7–10 dias (fase fria).`
+  },
+  {
+    name:"Abscesso Periodontal",
+    color:"badge-amber",
+    rx:`CLÍNICA ODONTOLÓGICA — PRESCRIÇÃO MÉDICA
+Data: ${new Date().toLocaleDateString('pt-BR')}
+
+PATOLOGIA: Abscesso Periodontal Agudo
+
+─────────────────────────────────────────
+ANTIBIÓTICO (apenas se sinais sistêmicos):
+Amoxicilina 500mg
+Tomar 1 cápsula de 8 em 8 horas por 7 dias.
+(Prescrever SOMENTE se: febre, trismo, celulite ou mal-estar)
+
+─────────────────────────────────────────
+ANALGÉSICO:
+Dipirona Sódica 500mg
+Tomar 1 comprimido de 6 em 6 horas por 48 horas.
+
+─────────────────────────────────────────
+ANTI-INFLAMATÓRIO:
+Nimesulida 100mg
+Tomar 1 comprimido de 12 em 12 horas por 3 dias.
+
+─────────────────────────────────────────
+ANTISSÉPTICO LOCAL:
+Digliconato de Clorexidina 0,12%
+Bochechar 15ml por 1 minuto de 12 em 12 horas por 7 dias.
+
+─────────────────────────────────────────
+OBSERVAÇÕES:
+Antibiótico não substitui drenagem cirúrgica.
+Terapia definitiva: raspagem e alisamento radicular em 7–14 dias.`
+  },
+  {
+    name:"Abscesso Periapical Agudo",
+    color:"badge-rose",
+    rx:`CLÍNICA ODONTOLÓGICA — PRESCRIÇÃO MÉDICA
+Data: ${new Date().toLocaleDateString('pt-BR')}
+
+PATOLOGIA: Abscesso Periapical Agudo (Dentoalveolar)
+
+─────────────────────────────────────────
+ANTIBIÓTICO:
+Amoxicilina + Clavulanato 875mg
+Tomar 1 comprimido de 12 em 12 horas por 7 dias.
+
+SE ALÉRGICO A PENICILINAS:
+Clindamicina 300mg
+Tomar 1 cápsula de 6 em 6 horas por 7 dias.
+(Excelente penetração óssea)
+
+─────────────────────────────────────────
+ANALGÉSICO:
+Dipirona Sódica 1g
+Tomar 1 comprimido de 6 em 6 horas por 48 horas.
+
+─────────────────────────────────────────
+ANTI-INFLAMATÓRIO:
+Nimesulida 100mg
+Tomar 1 comprimido de 12 em 12 horas por 3 dias.
+
+─────────────────────────────────────────
+ANTISSÉPTICO LOCAL:
+Digliconato de Clorexidina 0,12%
+Bochechar 15ml/1min de 12 em 12 horas por 7 dias.
+
+─────────────────────────────────────────
+OBSERVAÇÕES:
+Retorno em 48h para avaliação.
+Tratar o canal ou extrair na sessão seguinte (tratamento definitivo).`
+  },
+  {
+    name:"Alveolite Seca",
+    color:"badge-sky",
+    rx:`CLÍNICA ODONTOLÓGICA — PRESCRIÇÃO MÉDICA
+Data: ${new Date().toLocaleDateString('pt-BR')}
+
+PATOLOGIA: Alveolite Seca (Dry Socket / Osteíte Alveolar)
+
+─────────────────────────────────────────
+ANALGÉSICO (HORÁRIO FIXO — mandatório):
+Dipirona Sódica 500mg
+Tomar 1 comprimido de 6 em 6 horas (horário fixo).
+NÃO prescrever "se doer" — o paciente perderá a janela terapêutica.
+
+─────────────────────────────────────────
+ANTI-INFLAMATÓRIO:
+Nimesulida 100mg
+Tomar 1 comprimido de 12 em 12 horas por 3 dias.
+
+─────────────────────────────────────────
+CURATIVO ALVEOLAR:
+Alveogyl® ou Alveosan® — inserido pelo cirurgião.
+(Pasta de eugenol + iodofórmio + bálsamo do Peru)
+Trocar curativo a cada 3–4 dias até resolução.
+
+─────────────────────────────────────────
+ANTISSÉPTICO (irrigação):
+Digliconato de Clorexidina 0,12%
+Irrigação SUAVÍSSIMA local com seringa (sem bochecho vigoroso).
+
+─────────────────────────────────────────
+⚠ IMPORTANTE: NÃO há indicação de antibiótico.
+(Alveolite seca = fibrinólise do coágulo, não infecção bacteriana)
+Evitar canudo, cuspir e bochechar com força por 14 dias.`
+  },
+  {
+    name:"Pulpite Irreversível",
+    color:"badge-amber",
+    rx:`CLÍNICA ODONTOLÓGICA — PRESCRIÇÃO MÉDICA
+Data: ${new Date().toLocaleDateString('pt-BR')}
+
+PATOLOGIA: Pulpite Irreversível Sintomática (PIS)
+
+─────────────────────────────────────────
+ANALGÉSICO (HORÁRIO FIXO):
+Dipirona Sódica 1g
+Tomar 1 comprimido de 6 em 6 horas por 48 horas.
+
+─────────────────────────────────────────
+ANTI-INFLAMATÓRIO:
+Nimesulida 100mg
+Tomar 1 comprimido de 12 em 12 horas por 3 dias.
+
+─────────────────────────────────────────
+⚠ NÃO HÁ INDICAÇÃO DE ANTIBIÓTICO.
+Pulpite irreversível = inflamação intrapulpar (não infecção).
+Antibiótico não penetra em tecido com pressão interna elevada.
+
+─────────────────────────────────────────
+OBSERVAÇÕES:
+Tratamento definitivo: Pulpectomia de urgência + conclusão
+do tratamento endodôntico na sessão seguinte.
+Retornar em 48–72h.`
+  },
+  {
+    name:"Lesão Endo-Perio",
+    color:"badge-emerald",
+    rx:`CLÍNICA ODONTOLÓGICA — PRESCRIÇÃO MÉDICA
+Data: ${new Date().toLocaleDateString('pt-BR')}
+
+PATOLOGIA: Lesão Endo-Perio Combinada
+
+─────────────────────────────────────────
+ANTIBIÓTICO:
+Amoxicilina + Clavulanato 875mg
+Tomar 1 comprimido de 12 em 12 horas por 7 dias.
+
+─────────────────────────────────────────
+ANALGÉSICO:
+Dipirona Sódica 500mg
+Tomar 1 comprimido de 6 em 6 horas por 48 horas.
+
+─────────────────────────────────────────
+ANTI-INFLAMATÓRIO:
+Nimesulida 100mg
+Tomar 1 comprimido de 12 em 12 horas por 3 dias.
+
+─────────────────────────────────────────
+ANTISSÉPTICO LOCAL:
+Digliconato de Clorexidina 0,12%
+Bochechar 15ml/1min de 12 em 12 horas por 7 dias.
+
+─────────────────────────────────────────
+PROTOCOLO DE TRATAMENTO DEFINITIVO:
+1º Retreatment endodôntico (canal)
+2º Aguardar 2–3 meses
+3º Avaliar persistência da bolsa periodontal
+4º Se persistir: raspagem/cirurgia periodontal`
+  }
+];
+
+// ===========================
+// DATA — CHECKLIST
+// ===========================
+const CHECKS = {
+  "🧠 Diagnóstico Inicial":[
+    "Realizou anamnese expressa (queixa principal + história da dor)",
+    "Identificou se a dor é espontânea (irreversível) ou provocada (reversível)",
+    "Aplicou as 4 perguntas-chave de triagem (calor/frio, decúbito, mobilidade, gosto ruim)",
+    "Definiu a origem: pulpar, periodontal ou mista",
+    "Estruturou a resposta na ordem: Diagnóstico → Etiologia → Conduta → Prognóstico"
+  ],
+  "💉 Sutura — Ato Cirúrgico":[
+    "Anestesia confirmada antes de iniciar a sutura",
+    "Agulha entrou a 90° perpendicular à mucosa (evitou corte oblíquo)",
+    "Distância da borda respeitada (mínimo 2,0mm da linha de incisão)",
+    "Espessura homogênea de tecido conjuntivo englobada nos dois lados",
+    "Nó de cirurgião executado (2 + 1 + 1 alças)",
+    "Nó lateralizado fora da linha de incisão (não sobre a ferida)",
+    "Verificou isquemia (gengiva branca ao redor do nó = aperto excessivo)",
+    "Cauda do fio cortada com 3 a 5mm de sobra",
+    "Bordas em eversão (levemente voltadas para fora — não invertidas)",
+    "Escolheu o tipo de ponto correto para a situação clínica"
+  ],
+  "💊 Prescrição e Conduta":[
+    "Prescreveu analgésico em horário fixo (não 'se doer')",
+    "Indicação correta do antibiótico (apenas se sinais sistêmicos ou GUN/Pericoronarite)",
+    "Antisséptico local com instrução correta (iniciar 24h após, máx. 10 dias)",
+    "Orientou sobre NÃO usar canudo, cuspir ou bochechar vigoroso pós-exodontia",
+    "Deu instrução de dieta (líquida/fria nas primeiras 24h)"
+  ],
+  "📋 Encerramento Clínico":[
+    "Recitou o script de encerramento ao 'paciente' com postura profissional",
+    "Explicou tipo de sutura usada e motivo da escolha técnica",
+    "Informou data de remoção dos pontos (7 dias em geral)",
+    "Agendou retorno e definiu o tratamento definitivo (canal, exodontia, periodontia)"
+  ]
+};
+
+// ===========================
+// STATE
+// ===========================
+let currentCase = null;
+let currentSutura = 0;
+let currentTab = 0;
+let checkState = {};
+let totalChecks = 0;
+
+// ===========================
+// INIT
+// ===========================
+function init(){
+  renderCaseGrid();
+  renderSutGrid();
+  renderRxGrid();
+  renderChecklist();
+}
+
+// ===========================
+// SIMULADOR
+// ===========================
+function renderCaseGrid(){
+  const g = document.getElementById('case-grid');
+  g.innerHTML = CASES.map((c,i)=>`
+    <div class="case-card" onclick="openCase(${i})">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <div class="badge ${c.badge}">${c.badgeLabel}</div>
+      </div>
+      <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:8px">${c.title}</div>
+      <div style="font-size:12px;color:#475569;margin-bottom:14px">${c.category}</div>
+      <div style="font-size:13px;color:#64748b;line-height:1.6;font-style:italic">"${c.speech.slice(1,80)}…"</div>
+      <div style="margin-top:14px;font-size:12px;color:#2dd4bf;font-weight:600"><i class="fas fa-play" style="margin-right:6px"></i>Iniciar caso</div>
+    </div>
+  `).join('');
+}
+
+function openCase(i){
+  currentCase = CASES[i];
+  document.getElementById('case-grid').style.display='none';
+  document.getElementById('active-case').style.display='block';
+  document.getElementById('case-speech').textContent = currentCase.speech;
+  document.getElementById('case-badge').className = `badge ${currentCase.badge}`;
+  document.getElementById('case-badge').textContent = currentCase.title;
+  document.getElementById('answer-block').style.display='none';
+  document.getElementById('reveal-btn').style.display='inline-flex';
+}
+
+function randomCase(){
+  openCase(Math.floor(Math.random()*CASES.length));
+}
+
+function resetCase(){
+  currentCase = null;
+  document.getElementById('case-grid').style.display='grid';
+  document.getElementById('active-case').style.display='none';
+  document.getElementById('answer-block').style.display='none';
+}
+
+function revealAnswer(){
+  if(!currentCase) return;
+  document.getElementById('reveal-btn').style.display='none';
+  const b = document.getElementById('answer-block');
+  b.style.display='block';
+  b.innerHTML=`
+    <div class="reveal-block">
+      <div style="display:grid;gap:16px">
+        <div class="card-sm">
+          <div class="label">🔬 Diagnóstico Principal</div>
+          <div style="font-size:16px;font-weight:700;color:#2dd4bf">${currentCase.diagnosis}</div>
         </div>
-
-        <div id="tab-tumores" class="tab-content mt-4 space-y-4">
-            
-            <div class="text-xs font-bold text-indigo-600 uppercase tracking-wider pl-1 mt-6 mb-2">Neoplasias Benignas / Hamartomas</div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('tumor-ameloblastoma')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 3: Tratamento Radical</span>
-                        <h3 class="text-lg font-bold text-slate-800">1. Ameloblastoma (Sólido/Multicístico)</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-tumor-ameloblastoma" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="tumor-ameloblastoma" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Conceito e Origem:</strong> Neoplasia benigna de origem epitelial localmente invasiva e com altíssima taxa de recidiva se mal tratada. Dividida em sólido/multicístico (86%), unicístico (13%) e periférico (1%).</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Sítio Anatômico (Dados do PDF):</strong> Altamente prevalente na **região posterior da mandíbula (57,3%)**, seguida pela região posterior da maxila (16,9%), anterior da mandíbula (16,6%) e anterior da maxila (9,2%).</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Manifestação:</strong> Gera nítida expansão cortical óssea, mas as corticais costumam se manter **duras à palpação** (perfuração clínica é incomum). Causa reabsorção radicular severa em dentes vizinhos e deslocamentos. Dor e parestesia são raras.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Conduta Cirúrgica e Imagem:</strong> Radiograficamente exibe aspecto de **"bolhas de sabão"** (loculações grandes) ou **"favos de mel"** (pequenas). Exige **Ressecção Radical (Marginal ou Parcial)** com 1 cm de margem de osso saudável. Acompanhamento clínico mínimo de 10 anos.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('tumor-toa')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-teal-50 text-teal-700 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 1: Conservador</span>
-                        <h3 class="text-lg font-bold text-slate-800">2. Tumor Odontogênico Adenomatoide (TOA)</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-tumor-toa" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="tumor-toa" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Conceito e Origem:</strong> Tumor epitelial benigno caracterizado histologicamente por estruturas que lembram ductos glandulares. Possui potencial de crescimento limitado.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Sítio Anatômico:</strong> Em **75% dos casos está intimamente associado à coroa de um dente incluso**, possuindo predileção absoluta pelo **canino permanente**.</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Manifestação:</strong> Lesão totalmente indolor e de crescimento muito lento, podendo gerar um aumento de volume (tumefação) localizado discreto na região anterior.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Conduta Cirúrgica e Imagem:</strong> Radiotransparência unilocular com pequenos focos radiopacos calcificados dentro (aspecto de **"flocos de neve"**). Diferencial do cisto dentígero: a área radiolúcida **se estende além da junção amelocementária**, englobando a raiz. Tratamento simples por **enucleação/dissecção** (não recidiva).</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('tumor-odontoma')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-teal-50 text-teal-700 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 1: Conservador</span>
-                        <h3 class="text-lg font-bold text-slate-800">3. Odontomas (Composto e Complexo)</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-tumor-odontoma" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="tumor-odontoma" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Conceito e Origem:</strong> Os tumores odontogênicos mais prevalentes. São considerados hamartomas compostos por tecidos dentários maduros (esmalte, dentina, cemento e polpa) de forma variada.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Sítio Anatômico:</strong> <br>• **Composto:** Mais frequente na **região anterior da maxila** (pequenos "dentinhos" conoides encapsulados).<br>• **Complexo:** Mais comum na **região posterior da mandíbula** (massa radiopaca amorfa e conglomerada).</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Manifestação:</strong> São assintomáticos na totalidade dos casos clínicos, não gerando edema ou expansão notável das corticais, exceto se atingirem tamanhos colossais.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Conduta Cirúrgica:</strong> Diagnosticados em radiografias de rotina. Sua principal complicação é **impedir a erupção (causar retenção) de dentes permanentes**. O tratamento indicado é a **enucleação cirúrgica simples por curetagem**, sem riscos de recidiva.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <button onclick="toggleAccordion('tumor-mixoma')" class="w-full text-left p-5 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div>
-                        <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded font-bold mb-1">Nível 3: Tratamento Radical</span>
-                        <h3 class="text-lg font-bold text-slate-800">4. Mixoma Odontogênico</h3>
-                    </div>
-                    <i data-lucide="chevron-down" id="icon-tumor-mixoma" class="w-5 h-5 text-slate-400 transition-transform"></i>
-                </button>
-                <div id="tumor-mixoma" class="accordion-content border-t border-slate-50 bg-slate-50/50">
-                    <div class="p-5 space-y-4 text-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">💡 Conceito e Origem:</strong> Tumor raro de origem ectomesenquimal (lembra a matriz tecidual frouxa da papila dentária). Acomete majoritariamente adultos jovens por volta dos 30 anos.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-teal-700 block mb-1">📍 Sítio Anatômico:</strong> Pode se manifestar em qualquer localização dos maxilares, contudo é muito mais frequente na **porção posterior da mandíbula**.</div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-amber-700 block mb-1">⚠️ Edema / Manifestação:</strong> Apresenta crescimento lento, mas comportamento localmente infiltrativo agressivo. Causa **assimetria facial nítida** por expansão cortical. No transoperatório, o tumor se revela como uma massa de **aspecto gelatinoso**.</div>
-                            <div class="bg-white p-3 rounded-lg border border-slate-100"><strong class="text-rose-700 block mb-1">🚨 Conduta Cirúrgica e Imagem:</strong> Imagem radiolúcida multilocular com septos internos finos imitando aspectos de **"raquete de tênis"**, "bolhas de sabão" ou "teias de aranha". Exige **ressecção cirúrgica com margem de segurança** porque o material gelatinoso se infiltra facilmente pelas trabéculas ósseas medulares.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+        <div class="card-sm">
+          <div class="label">🧩 Justificativa Baseada na Fala</div>
+          <div class="value">${currentCase.justification}</div>
         </div>
+        <div class="card-sm">
+          <div class="label">🪑 Conduta Clínica Imediata</div>
+          <div class="value" style="white-space:pre-line">${currentCase.conduct}</div>
+        </div>
+        <div class="rx-block">
+          <div class="label" style="color:#14b8a6">💊 Prescrição Completa</div>
+          <div style="white-space:pre-line;font-size:13px;line-height:2;color:#94a3b8">${currentCase.prescription}</div>
+        </div>
+        <div class="card-sm" style="border-color:rgba(52,211,153,.3)">
+          <div class="label">📈 Prognóstico</div>
+          <div class="value">${currentCase.prognosis}</div>
+        </div>
+      </div>
+    </div>
+  `;
+  b.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-    </main>
+// ===========================
+// SUTURAS
+// ===========================
+function renderSutGrid(){
+  const g = document.getElementById('sut-grid');
+  g.innerHTML = SUTURAS.map((s,i)=>`
+    <div class="sut-btn ${i===0?'active':''}" id="sut-${i}" onclick="selectSutura(${i})">${i+1}. ${s.name}</div>
+  `).join('');
+  selectSutura(0);
+}
 
-    <footer class="text-center text-xs text-slate-400 mt-12">
-        Odonto-SIM &bull; Desenvolvido para estudos acadêmicos &bull; Faculdade de Odontologia
-    </footer>
+function selectSutura(i){
+  currentSutura=i;
+  currentTab=0;
+  SUTURAS.forEach((_,j)=>{
+    document.getElementById(`sut-${j}`).className=`sut-btn${j===i?' active':''}`;
+  });
+  const s = SUTURAS[i];
+  document.getElementById('sut-panel').style.display='block';
+  document.getElementById('sut-icon').innerHTML=s.icon;
+  document.getElementById('sut-name').textContent=s.name;
+  document.getElementById('sut-sub').textContent=s.sub;
+  showTab(0);
+}
 
-    <script>
-        // Inicializa os ícones do Lucide
-        lucide.createIcons();
+function showTab(t){
+  currentTab=t;
+  [0,1,2].forEach(i=>{
+    document.getElementById(`stab-${i}`).className=`stab${i===t?' active':''}`;
+  });
+  document.getElementById('sut-content').innerHTML = SUTURAS[currentSutura].tabs[t];
+}
 
-        // Lógica de Abas (Tabs)
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.getElementById('tab-' + tabName).classList.add('active');
+// ===========================
+// RECEITUÁRIO
+// ===========================
+function renderRxGrid(){
+  const g = document.getElementById('rx-grid');
+  g.innerHTML = RX.map((r,i)=>`
+    <div class="case-card" style="cursor:pointer;padding:18px" onclick="selectRx(${i})">
+      <div class="badge ${r.color}" style="margin-bottom:10px;font-size:10px">${r.name}</div>
+    </div>
+  `).join('');
+}
 
-            const btnCistos = document.getElementById('btn-cistos');
-            const btnTumores = document.getElementById('btn-tumores');
+function selectRx(i){
+  const r = RX[i];
+  document.getElementById('rx-panel').style.display='block';
+  document.getElementById('rx-badge').className=`badge ${r.color}`;
+  document.getElementById('rx-badge').textContent=`Receita: ${r.name}`;
+  document.getElementById('rx-content').innerHTML=`<pre style="white-space:pre-wrap;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2;color:#94a3b8">${r.rx}</pre>`;
+  document.getElementById('rx-panel').scrollIntoView({behavior:'smooth'});
+}
 
-            if (tabName === 'cistos') {
-                btnCistos.className = "flex-1 py-4 text-center font-bold text-teal-600 border-b-2 border-teal-600 focus:outline-none flex justify-center items-center gap-2 transition-all cursor-pointer";
-                btnTumores.className = "flex-1 py-4 text-center font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-700 focus:outline-none flex justify-center items-center gap-2 transition-all cursor-pointer";
-            } else {
-                btnTumores.className = "flex-1 py-4 text-center font-bold text-indigo-600 border-b-2 border-indigo-600 focus:outline-none flex justify-center items-center gap-2 transition-all cursor-pointer";
-                btnCistos.className = "flex-1 py-4 text-center font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-700 focus:outline-none flex justify-center items-center gap-2 transition-all cursor-pointer";
-            }
-        }
+function copyRx(){
+  const el = document.getElementById('rx-content');
+  navigator.clipboard.writeText(el.innerText||el.textContent).then(()=>{
+    const btn = event.target.closest('button');
+    const orig = btn.innerHTML;
+    btn.innerHTML='<i class="fas fa-check"></i> Copiado!';
+    btn.style.color='#34d399';
+    setTimeout(()=>{btn.innerHTML=orig;btn.style.color='';},2000);
+  });
+}
 
-        // Lógica dos Cards Retráteis (Accordions)
-        function toggleAccordion(id) {
-            const content = document.getElementById(id);
-            const icon = document.getElementById('icon-' + id);
-            
-            if (content.classList.contains('open')) {
-                content.classList.remove('open');
-                icon.style.transform = 'rotate(0deg)';
-            } else {
-                // Opcional: Fecha outros abertos para ficar organizado
-                document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('open'));
-                document.querySelectorAll('[id^="icon-"]').forEach(el => el.style.transform = 'rotate(0deg)');
-                
-                content.classList.add('open');
-                icon.style.transform = 'rotate(180deg)';
-            }
-        }
-    </script>
+// ===========================
+// CHECKLIST
+// ===========================
+function renderChecklist(){
+  totalChecks=0;
+  const container = document.getElementById('check-groups');
+  container.innerHTML='';
+  Object.entries(CHECKS).forEach(([group,items])=>{
+    const groupEl = document.createElement('div');
+    groupEl.style.marginBottom='24px';
+    groupEl.innerHTML=`<div style="font-size:13px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">${group}</div>`;
+    items.forEach((item,j)=>{
+      const id=`${group}-${j}`;
+      checkState[id]=false;
+      totalChecks++;
+      const el=document.createElement('div');
+      el.className='check-item';
+      el.id=`chk-${id}`;
+      el.onclick=()=>toggleCheck(id);
+      el.innerHTML=`<div class="check-box" id="box-${id}"></div><div style="font-size:14px;color:#cbd5e1;line-height:1.5">${item}</div>`;
+      groupEl.appendChild(el);
+    });
+    container.appendChild(groupEl);
+  });
+}
+
+function toggleCheck(id){
+  checkState[id]=!checkState[id];
+  const item=document.getElementById(`chk-${id}`);
+  const box=document.getElementById(`box-${id}`);
+  if(checkState[id]){
+    item.classList.add('done');
+    box.innerHTML='<i class="fas fa-check" style="color:#040d1a;font-size:12px"></i>';
+  } else {
+    item.classList.remove('done');
+    box.innerHTML='';
+  }
+  updateProgress();
+}
+
+function updateProgress(){
+  const done=Object.values(checkState).filter(Boolean).length;
+  const pct=Math.round(done/totalChecks*100);
+  document.getElementById('check-count').textContent=done;
+  document.getElementById('check-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+}
+
+function checkAll(){
+  Object.keys(checkState).forEach(id=>{
+    checkState[id]=true;
+    const item=document.getElementById(`chk-${id}`);
+    const box=document.getElementById(`box-${id}`);
+    if(item){item.classList.add('done');box.innerHTML='<i class="fas fa-check" style="color:#040d1a;font-size:12px"></i>';}
+  });
+  updateProgress();
+}
+
+function resetCheck(){
+  Object.keys(checkState).forEach(id=>{
+    checkState[id]=false;
+    const item=document.getElementById(`chk-${id}`);
+    const box=document.getElementById(`box-${id}`);
+    if(item){item.classList.remove('done');box.innerHTML='';}
+  });
+  updateProgress();
+}
+
+// ===========================
+// NAV
+// ===========================
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`[onclick="showSection('${id}')"]`).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+init();
+</script>
 </body>
 </html>
